@@ -1,0 +1,55 @@
+name: Build and Deploy to Bunny Magic Containers
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha,format=long
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      # Only deploy to Bunny on main branch (not PRs)
+      # - name: Deploy to Bunny Magic Containers
+      #   if: github.ref == 'refs/heads/main'
+      #   uses: BunnyWay/actions/container-update-image@main
+      #   with:
+      #     app_id: ${{ vars.APP_ID }}
+      #     api_key: ${{ secrets.BUNNYNET_API_KEY }}
+      #     container: app
+      #     image_tag: ${{ github.sha }}
