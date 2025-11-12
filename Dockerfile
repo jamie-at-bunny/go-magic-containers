@@ -2,7 +2,10 @@ FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
 
-COPY go.mod *.go ./
+COPY go.mod go.sum* ./
+RUN go mod download && go mod verify
+
+COPY *.go ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /api
 
