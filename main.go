@@ -57,7 +57,7 @@ func metadataHandler(w http.ResponseWriter, r *http.Request) {
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
-		"message": "Go Bunny, Go!",
+		"message": "Go Bunny, Go 2!",
 		"version": "1.0.0",
 	})
 }
